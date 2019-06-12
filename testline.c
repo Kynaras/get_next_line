@@ -1,18 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   test.c                                             :+:      :+:    :+:   */
+/*   testline.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/06/11 13:04:27 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/12 10:05:22 by keverett         ###   ########.fr       */
+/*   Created: 2019/06/12 10:05:39 by keverett          #+#    #+#             */
+/*   Updated: 2019/06/12 10:21:35 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include <stdio.h>
+#include <unistd.h>
+#include "get_next_line.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include "libft.h"
+
 int ft_check(char *str)
 {
 	int i;
-	
+
 	i = 0;
 	while (str[i] != '\0')
 	{
@@ -37,18 +47,25 @@ char	*get_next_line(const int fd, char **list)
 	char *b;
 	static char *c;
 
-	if (c != NULL)
-	a = (char*)malloc(BUFF_SIZE * sizeof(char) + 1);
+	a = (char*)ft_memalloc(BUFF_SIZE + 1);
 	count = 1;
-
 	read (fd, a, BUFF_SIZE);
 	a[BUFF_SIZE] == '\0';
 	if(ft_check(a) == 0)
 	{
 		b = (char*)malloc(BUFF_SIZE * count *  sizeof(char) + 1);
 		ft_strncpy(b, a, BUFF_SIZE);
-		
 	}
-	ft_memset(a, '\0', BUFF_SIZE);
-	return (ytr);
+	//ft_memset(a, '\0', BUFF_SIZE);
+	*list = a;
+	return (return *list);
+}
+
+int main()
+{
+	char **line;
+
+	line = NULL;
+	*line = get_next_line(open("test", O_RDONLY), line);
+	printf("%s", *line);
 }
