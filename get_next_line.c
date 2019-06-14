@@ -6,7 +6,7 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/10 08:08:04 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/14 11:51:27 by keverett         ###   ########.fr       */
+/*   Updated: 2019/06/14 15:21:40 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,10 @@
 #include "libft.h"
 
 // Create a recursive function which keeps track of the number of buffs before assigning it to line.
-ft_readthis(const int fd, t_list *alst)
-{
 
+static void st_nt(void)
+{
+	int x = 1;
 }
 
 char	*get_next_line(const int fd, char **list)
@@ -30,44 +31,50 @@ char	*get_next_line(const int fd, char **list)
 	// Count counts the number of times recursion is used, buf1 to read to
 	static int count = 0;
 	char *buf1;
-	int i;
+	int i = 0;
 
-	i = 0;
 	count++;
 	// Assigns and allocates buffer to be read into
 	buf1 = ft_memalloc(BUFF_SIZE + 1);
 	read(fd, buf1, BUFF_SIZE);
 
 	//Reads the buffer to see if newline/EOF has been reached
-	while (buf1[i])
+	while (buf1[i] != '\0')
 	{
 		if (buf1[i] == '\n' || buf1[i] == EOF)
 			break;
 		i++;
 	}
 	//If no new line, recursive call to get_next_line. Else if newline/EOF is found, malloc/write;
-	if (i = BUFF_SIZE)
+	if (i == BUFF_SIZE)
 		get_next_line(fd, list);
+	else if (count == 1 && i < BUFF_SIZE)
+	{
+		*list = (char*)ft_memalloc(i + 1);
+		ft_strcpy(*list, buf1);
+		return (0);
+	}
 	else
 	{
-		*list = (char*)ft_memalloc(count * BUFF_SIZE + i + 1);
-		i--;
-		while (i >= 0)
-		{
-			*list[count * BUFF_SIZE + i] = buf1[i];
-			i++;
-		}
-	}
-	// Second call for full BUFF_SIZE for the full buffers in the recursion
-	if (i = BUFF_SIZE)
-	{
-		i--;
+		st_nt();
 		count--;
-		while (i >= 0);
+		*list = (char*)ft_memalloc(count * BUFF_SIZE + i + 1);
+		while (i > 0)
 		{
-			*list[count * BUFF_SIZE + i] = buf1[i];
+			(*list)[count * BUFF_SIZE + i - 1] = buf1[i -1];
 			i--;
 		}
+		count--;
+	}
+	// Second call for full BUFF_SIZE for the full buffers in the recursion
+	if (i == BUFF_SIZE)
+	{
+		while (i > 0)
+		{
+			(*list)[count * BUFF_SIZE + i - 1] = buf1[i - 1];
+			i--;
+		}
+		count--;
 	}
 	return (0);
 }
@@ -75,11 +82,12 @@ char	*get_next_line(const int fd, char **list)
 int main()
 {
 	char **c;
-	char b;
+	char *b;
 	int i;
+
+	i = open("test", O_RDONLY);
 	c = &b;
 	b = NULL;
-	
-	
-	get_next_line
-
+	get_next_line(i, c);
+	printf("%s", *c);
+}
