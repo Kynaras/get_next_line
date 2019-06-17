@@ -21,21 +21,22 @@
 
 // Create a recursive function which keeps track of the number of buffs before assigning it to line.
 
-static void st_nt(void)
+void	ft_checkbuf(char *buf)
 {
-	int x = 1;
-}
-
+	if
 char	*get_next_line(const int fd, char **list)
 {
 	// Count counts the number of times recursion is used, buf1 to read to
 	static int count = 0;
 	char *buf1;
+	static char *buf2;
 	int i = 0;
 
+	ft_checkbuf(buf2);
 	count++;
 	// Assigns and allocates buffer to be read into
 	buf1 = ft_memalloc(BUFF_SIZE + 1);
+	buf2 = ft_memalloc(BUFF_SIZE + 1);
 	read(fd, buf1, BUFF_SIZE);
 
 	//Reads the buffer to see if newline/EOF has been reached
@@ -56,15 +57,20 @@ char	*get_next_line(const int fd, char **list)
 	}
 	else
 	{
-		st_nt();
 		count--;
 		*list = (char*)ft_memalloc(count * BUFF_SIZE + i + 1);
+		if (buf1[i] != EOF && buf1[i + 1] != '\0')
+			ft_strcpy(buf2, buf1 + i + 1);
+		else
+			ft_memset(buf2, '\0', BUFF_SIZE + 1);
+
 		while (i > 0)
 		{
 			(*list)[count * BUFF_SIZE + i - 1] = buf1[i -1];
 			i--;
 		}
 		count--;
+		
 	}
 	// Second call for full BUFF_SIZE for the full buffers in the recursion
 	if (i == BUFF_SIZE)
