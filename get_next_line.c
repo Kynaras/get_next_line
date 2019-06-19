@@ -6,14 +6,12 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/18 08:27:28 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/19 09:40:41 by keverett         ###   ########.fr       */
+/*   Updated: 2019/06/19 15:45:26 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "libft.h"
 
-void	st_counter(b_list *link)
-
-void ft_count(char **line, t_list **alst)
+void ft_count(t_list **alst)
 {
 	t_list *ptr;
 	int i;
@@ -27,15 +25,38 @@ void ft_count(char **line, t_list **alst)
 		while (ptr.content[i] != '\0')
 		{
 			if (ptr.content[i] == '\n' || ptr.content == EOF)
-				break;
+				return (count);
 			i++;
 			count++;
 		}
 		i = 0;
+		ptr = ptr.next;
 	}
-	*line = (char*)malloc(sizeof(char) * count + 1);
-		
-		
+	return (count);
+}
+
+void	ft_lstcpy(t_list **alst)
+{
+	t_list *ptr;
+	int i;
+	int j;
+
+	i = 0;
+	j = 0;
+	ptr = *alst;
+
+	while (ptr != NULL)
+	{
+		while (ptr.content[i] != '\0')
+		{
+			(*line)[j] = ptr.content[i];
+			i++;
+			j++;
+		}
+		i = 0;
+		ptr = ptr.next;
+	}
+}
 int	get_next_line(int fd, char **line)
 {
 	static t_list **alst;
@@ -51,8 +72,8 @@ int	get_next_line(int fd, char **line)
 	alst = malloc(sizeof(*t_list));
 
 	read(buf, BUFF_SIZE);
-	while(buf[i])
-	{
+	while (buf[i])
+	
 		if (buf[i] == '\n' || buf[i] == EOF)
 			break;
 		else
@@ -64,7 +85,10 @@ int	get_next_line(int fd, char **line)
 		*alst = ft_lstnew(buf, 0);
 	if (i == BUFF_SIZE)
 		ft_lstadd(t_list **alst, ft_lstnew(buf, 0));
-
+	count = ft_count(alst);
+	*line = (char *)malloc(sizeof(char) * count + 1);
+	ft_lstcpy;
+	return(1);
 
 }
 int main()
