@@ -6,55 +6,63 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/18 08:27:28 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/19 15:45:26 by keverett         ###   ########.fr       */
+/*   Updated: 2019/06/20 12:33:21 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "libft.h"
+#include "get_next_line.h"
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
+#include <fcntl.h>
 
-void ft_count(t_list **alst)
+int	ft_count(t_list **alst)
 {
 	t_list *ptr;
 	int i;
 	int count;
+	char *cast;
 
 	i = 0;
 	count = 0;
 	ptr = *alst;
 	while (ptr != NULL)
 	{
-		while (ptr.content[i] != '\0')
+		cast = ptr->content;
+		while (cast[i] != '\0')
 		{
-			if (ptr.content[i] == '\n' || ptr.content == EOF)
+			if (cast[i] == '\n' || cast[i] == EOF)
 				return (count);
 			i++;
 			count++;
 		}
 		i = 0;
-		ptr = ptr.next;
+		ptr = ptr->next;
 	}
 	return (count);
 }
 
-void	ft_lstcpy(t_list **alst)
+void	ft_lstcpy(t_list **alst, char **line)
 {
 	t_list *ptr;
 	int i;
 	int j;
-
+	char *cast;
 	i = 0;
 	j = 0;
 	ptr = *alst;
 
 	while (ptr != NULL)
 	{
-		while (ptr.content[i] != '\0')
+		cast = ptr->content;
+		while (cast[i] != '\0')
 		{
-			(*line)[j] = ptr.content[i];
+			(*line)[j] = cast[i];
 			i++;
 			j++;
 		}
 		i = 0;
-		ptr = ptr.next;
+		ptr = ptr->next;
 	}
 }
 int	get_next_line(int fd, char **line)
@@ -63,18 +71,23 @@ int	get_next_line(int fd, char **line)
 	t_list *ptr;
 	char *buf;
 	int i;
+	int end;
 	int nextline;
 	int count;
 
+	//if (*line != NULL)
+	//	free(*line);
+
 	nextline = 1;
 	i = 0;
+	end = 0;
 	buf = ft_memalloc(BUFF_SIZE + 1);
-	alst = malloc(sizeof(*t_list));
+	alst = malloc(sizeof(t_list*));
 
-	read(buf, BUFF_SIZE);
+	end = read(fd, buf, BUFF_SIZE);
 	while (buf[i])
-	
-		if (buf[i] == '\n' || buf[i] == EOF)
+	{
+		if (buf[i] == '\n' || end == -1 )
 			break;
 		else
 			i++;
@@ -82,21 +95,23 @@ int	get_next_line(int fd, char **line)
 	if(i == BUFF_SIZE)
 		get_next_line(fd, line);
 	else
-		*alst = ft_lstnew(buf, 0);
+		*alst = ft_lstnew(buf, BUFF_SIZE + 1);
 	if (i == BUFF_SIZE)
-		ft_lstadd(t_list **alst, ft_lstnew(buf, 0));
+		ft_lstadd(alst, ft_lstnew(buf, BUFF_SIZE + 1));
 	count = ft_count(alst);
 	*line = (char *)malloc(sizeof(char) * count + 1);
-	ft_lstcpy;
+	ft_lstcpy(alst, line);
 	return(1);
 
 }
 int main()
 {
+	char **line;
+	line = (char**)malloc(sizeof(char*));
 	int id;
 	id = open("test", O_RDONLY);
-	get_next_line(id, 
-	
-
+	get_next_line(id, line);
+	printf("%s", *line);
+}
 
 
