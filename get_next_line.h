@@ -6,10 +6,11 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/10 10:34:55 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/11 13:18:29 by keverett         ###   ########.fr       */
+/*   Updated: 2019/06/20 15:51:08 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef BUFF_SIZE
-# define BUFF_SIZE 500
+# define BUFF_SIZE 3
+
 #endif

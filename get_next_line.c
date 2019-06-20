@@ -6,7 +6,7 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/18 08:27:28 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/20 12:33:21 by keverett         ###   ########.fr       */
+/*   Updated: 2019/06/20 15:48:49 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "libft.h"
@@ -15,6 +15,20 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+void ft_delist(t_list **alst)
+{
+	t_list *ptr;
+	t_list *temp;
+	ptr = *alst;
+	temp = *alst;
+	while (ptr != NULL)
+	{
+		ptr = ptr->next;
+		free(temp);
+		temp = ptr;
+	}
+}
 
 int	ft_count(t_list **alst)
 {
@@ -31,7 +45,7 @@ int	ft_count(t_list **alst)
 		cast = ptr->content;
 		while (cast[i] != '\0')
 		{
-			if (cast[i] == '\n' || cast[i] == EOF)
+			if (cast[i] == '\n')
 				return (count);
 			i++;
 			count++;
@@ -67,7 +81,8 @@ void	ft_lstcpy(t_list **alst, char **line)
 }
 int	get_next_line(int fd, char **line)
 {
-	static t_list **alst;
+	t_list **alst;
+	static t_list *ebuf;
 	t_list *ptr;
 	char *buf;
 	int i;
@@ -75,8 +90,8 @@ int	get_next_line(int fd, char **line)
 	int nextline;
 	int count;
 
-	//if (*line != NULL)
-	//	free(*line);
+	if (*line != NULL)
+		free(*line);
 
 	nextline = 1;
 	i = 0;
@@ -95,12 +110,18 @@ int	get_next_line(int fd, char **line)
 	if(i == BUFF_SIZE)
 		get_next_line(fd, line);
 	else
+	{
 		*alst = ft_lstnew(buf, BUFF_SIZE + 1);
+		ebuf = ft_lstnew(ft_strsub(buf, i + 2, BUFF_SIZE - i - 1), BUFF_SIZE
+				- i - 1);
+		ft_putstr(ebuf->content);
+	}
 	if (i == BUFF_SIZE)
 		ft_lstadd(alst, ft_lstnew(buf, BUFF_SIZE + 1));
 	count = ft_count(alst);
 	*line = (char *)malloc(sizeof(char) * count + 1);
 	ft_lstcpy(alst, line);
+	ft_delist(alst);
 	return(1);
 
 }
@@ -108,6 +129,7 @@ int main()
 {
 	char **line;
 	line = (char**)malloc(sizeof(char*));
+	*line = (char*)malloc(sizeof(char));
 	int id;
 	id = open("test", O_RDONLY);
 	get_next_line(id, line);
