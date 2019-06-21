@@ -6,7 +6,7 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/18 08:27:28 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/20 15:48:49 by keverett         ###   ########.fr       */
+/*   Updated: 2019/06/21 12:03:06 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #include "libft.h"
@@ -42,7 +42,7 @@ int	ft_count(t_list **alst)
 	ptr = *alst;
 	while (ptr != NULL)
 	{
-		cast = ptr->content;
+		cast = (*ptr).content;
 		while (cast[i] != '\0')
 		{
 			if (cast[i] == '\n')
@@ -51,7 +51,7 @@ int	ft_count(t_list **alst)
 			count++;
 		}
 		i = 0;
-		ptr = ptr->next;
+		ptr = (*ptr).next;
 	}
 	return (count);
 }
@@ -79,6 +79,40 @@ void	ft_lstcpy(t_list **alst, char **line)
 		ptr = ptr->next;
 	}
 }
+void ft_recurse(int fd, char **line, t_list **alst)
+{
+	char *buf;
+	int i;
+	int count;
+
+	count = 0;
+	i = 0;
+	buf = ft_memalloc(BUFF_SIZE + 1);
+	read(fd, buf, BUFF_SIZE);
+	while (buf[i])
+	{
+		if (buf[i] == '\n')
+			break;
+		else
+			i++;
+	}
+	if(i == BUFF_SIZE)
+		ft_recurse(fd, line, alst);
+	else
+	{
+		alst = malloc(sizeof(t_list*));
+		*alst = ft_lstnew(buf, BUFF_SIZE + 1);
+//		ebuf = ft_lstnew(ft_strsub(buf, i + 1, BUFF_SIZE - i - 1), BUFF_SIZE
+//				- i - 1);
+//		ft_putstr(ebuf->content);
+	}
+	if (i == BUFF_SIZE)
+		ft_lstadd(alst, ft_lstnew(buf, BUFF_SIZE + 1));
+	count = ft_count(alst);
+	*line = ft_memalloc(count + 1);
+	ft_lstcpy(alst, line);
+	ft_delist(alst);
+}
 int	get_next_line(int fd, char **line)
 {
 	t_list **alst;
@@ -86,23 +120,19 @@ int	get_next_line(int fd, char **line)
 	t_list *ptr;
 	char *buf;
 	int i;
-	int end;
-	int nextline;
 	int count;
 
-	if (*line != NULL)
-		free(*line);
+	//if (*line != NULL)
+	//	free(*line);
 
-	nextline = 1;
 	i = 0;
-	end = 0;
-	buf = ft_memalloc(BUFF_SIZE + 1);
-	alst = malloc(sizeof(t_list*));
 
-	end = read(fd, buf, BUFF_SIZE);
+	ft_recurse(fd, line, alst);
+/*	buf = ft_memalloc(BUFF_SIZE + 1);
+	read(fd, buf, BUFF_SIZE);
 	while (buf[i])
 	{
-		if (buf[i] == '\n' || end == -1 )
+		if (buf[i] == '\n')
 			break;
 		else
 			i++;
@@ -111,17 +141,21 @@ int	get_next_line(int fd, char **line)
 		get_next_line(fd, line);
 	else
 	{
+		alst = malloc(sizeof(t_list*));
 		*alst = ft_lstnew(buf, BUFF_SIZE + 1);
-		ebuf = ft_lstnew(ft_strsub(buf, i + 2, BUFF_SIZE - i - 1), BUFF_SIZE
-				- i - 1);
-		ft_putstr(ebuf->content);
+//		ebuf = ft_lstnew(ft_strsub(buf, i + 1, BUFF_SIZE - i - 1), BUFF_SIZE
+//				- i - 1);
+//		ft_putstr(ebuf->content);
 	}
 	if (i == BUFF_SIZE)
+	{
 		ft_lstadd(alst, ft_lstnew(buf, BUFF_SIZE + 1));
+		free(buf);
+	}
 	count = ft_count(alst);
-	*line = (char *)malloc(sizeof(char) * count + 1);
+	*line = ft_memalloc(count + 1);
 	ft_lstcpy(alst, line);
-	ft_delist(alst);
+	ft_delist(alst); */
 	return(1);
 
 }
