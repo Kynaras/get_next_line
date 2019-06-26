@@ -11,6 +11,6 @@
 /* ************************************************************************** */
 
 #ifndef BUFF_SIZE
-# define BUFF_SIZE 1
+# define BUFF_SIZE 500
 
 #endif

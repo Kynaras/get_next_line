@@ -1,4 +1,10 @@
-int	ft_checkline(char **buf)
+#include "get_next_line.h"
+#include "libft.h"
+#include <sys/types.h>
+       #include <sys/stat.h>
+       #include <fcntl.h>
+
+int	ft_checkline(char *buf)
 {
 	int i;
 
@@ -26,7 +32,7 @@ int	get_next_line(int fd, char **line)
 	int check;
 
 	*line = ft_memalloc(1);
-
+	loop = 0;
 	buf = ft_memalloc(BUFF_SIZE + 1);
 
 	while (loop == 0);
@@ -36,7 +42,7 @@ int	get_next_line(int fd, char **line)
 		if (check = -1)
 		{
 			loop = 1;
-			return(line);
+			return(1);
 		}
 		else if (check = -2)
 		{
@@ -44,6 +50,7 @@ int	get_next_line(int fd, char **line)
 			free(*line);
 			*line = ft_strdup(tmp);
 			free(tmp);
+			loop = 1;
 		}
 		else
 		{
@@ -53,8 +60,17 @@ int	get_next_line(int fd, char **line)
 			free(tmp);
 			loop = 1;
 		}
-		return (0);
+		loop = 1;
+	}
 
-	}	
+return (0);	
+}
+int main()
+{
+	char *line;
+	int fd = open("test", O_RDONLY);
 
-int main
+	get_next_line(fd, &line);
+	printf("%s", line);
+	return (0);
+}
