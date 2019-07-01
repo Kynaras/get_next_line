@@ -4,7 +4,28 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-int ebuf(int fd, static t_list *list, char **line)
+int	ft_checkline(char *buf)
+{
+	int i;
+
+	i = 0;
+	while (buf[i])
+	{
+		if (buf[0] == '\0')
+			return (0);
+		if (buf[0] == '\n')
+			return (-1);
+		if (buf[i] == '\n')
+			return (i);
+		i++;
+	}
+	if (i == BUFF_SIZE)
+		return (-2);
+	else
+		return (-3);
+}
+
+int ft_ebuf(ssize_t fd, t_list *list, char **line)
 {
 	int size;
 	t_list *tmp;
@@ -30,15 +51,15 @@ int ebuf(int fd, static t_list *list, char **line)
 			{
 				buffer = ft_memalloc(BUFF_SIZE + 1);
 				ft_strncpy(buffer, tmp->content, size);
-				ft_join(*line, buffer);
+				ft_join(line, buffer);
 				free(buffer);
 				ft_strcpy(tmp->content, ft_strchr(tmp->content, '\n') + 1);
 				return (size);
 			}
 			else if (size == -3)
 			{
-				ft_join(*line, tmp->content);
-				ft_bzero(tmp->content);
+				ft_join(line, tmp->content);
+				ft_bzero(tmp->content, BUFF_SIZE + 1);
 			}	
 		}
 		tmp = tmp->next;
@@ -46,38 +67,6 @@ int ebuf(int fd, static t_list *list, char **line)
 	return (-4);
 }
 
-void 	ft_join(char **line, char *buf)
-{
-	char *temp;
-
-	if (*line == NULL)
-		*line = ft_memalloc(1);
-	temp = ft_strjoin(*line, buf);
-	free(*line);
-	*line = ft_strdup(temp);
-	free(temp);
-}
-
-int	ft_checkline(char *buf)
-{
-	int i;
-
-	i = 0;
-	while (buf[i])
-	{
-		if (buf[0] == '\0')
-			return (0);
-		if (buf[0] == '\n')
-			return (-1);
-		if (buf[i] == '\n')
-			return (i);
-		i++;
-	}
-	if (i == BUFF_SIZE)
-		return (-2);
-	else
-		return (-3);
-}
 
 int	get_next_line(int fd, char **line)
 {
@@ -85,23 +74,24 @@ int	get_next_line(int fd, char **line)
 	t_list *tmp;
 	char* buf;
 	int loop;
-	int rd;
+	ssize_t rd;
 	int check;
+	char *temp;
 
-	list = NULL;
 	loop = 0;
 	buf = ft_memalloc(BUFF_SIZE + 1);
 
 	rd = ft_ebuf(fd, list, line);
-	if (rd = -1)
+	if (rd == -1)
 		return (1);
 	if (rd > 0)
+		return (1);
 	while (loop == 0)
 	{
 		ft_bzero(buf, BUFF_SIZE);
 		rd = read(fd, buf, BUFF_SIZE);
 		check = ft_checkline(buf);
-		if (check == -2 || check = 0)
+		if (check == -2 || check == 0)
 		{
 			ft_join(line, buf);
 			if (rd == 0)
@@ -110,8 +100,12 @@ int	get_next_line(int fd, char **line)
 		else
 		{
 			if (check > 0)
-				ft_join(line, ft_strsub(buf, 0, check));
-			if ( rd == 0)
+			{
+				temp = ft_strsub(buf, 0, check);
+				ft_join(line, temp);
+				free(temp);
+			}
+			if (rd == 0)
 				return (0);
 			loop = 1;
 			if (list == NULL)
@@ -146,10 +140,29 @@ int	get_next_line(int fd, char **line)
 int main()
 {
 	char *line;
-	line = NULL;
+	line = ft_memalloc(1);
 	int fd = open("test", O_RDONLY);
+	int fd1 = open("test1", O_RDONLY);
+	int fd2 = open("test2", O_RDONLY);
+	get_next_line(fd2, &line);
+	printf("%s\n", line);
+	free(line);
+	line = ft_memalloc(1);
 	get_next_line(fd, &line);
-
-	printf("%s", line);
+	printf("%s\n", line);
+	free(line);
+	line = ft_memalloc(1);
+	get_next_line(fd2, &line);
+	printf("%s\n", line);
+	free(line);
+	line = ft_memalloc(1);
+	get_next_line(fd1, &line);
+	printf("%s\n", line);
+	free(line);
+	line = ft_memalloc(1);
+	get_next_line(fd2, &line);
+	printf("%s\n", line);
+	free(line);
+	
 	return (0);
 }
