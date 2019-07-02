@@ -67,7 +67,6 @@ int ft_ebuf(ssize_t fd, t_list *list, char **line)
 	return (-4);
 }
 
-
 int	get_next_line(int fd, char **line)
 {
 	static t_list *list;
@@ -80,34 +79,34 @@ int	get_next_line(int fd, char **line)
 
 	loop = 0;
 	buf = ft_memalloc(BUFF_SIZE + 1);
-
 	rd = ft_ebuf(fd, list, line);
-	if (rd == -1)
-		return (1);
 	if (rd > 0)
 		return (1);
 	while (loop == 0)
 	{
 		ft_bzero(buf, BUFF_SIZE);
 		rd = read(fd, buf, BUFF_SIZE);
+		if (rd == -1)
+			return (-1);
+//		if (rd == 0)
+//		{
+//			list = ft_lstnew(buf, BUFF_SIZE + 1);
+//			list->content_size = -5;
+//		}
 		check = ft_checkline(buf);
 		if (check == -2 || check == 0)
 		{
 			ft_join(line, buf);
-			if (rd == 0)
-				return (0);
 		}
 		else
 		{
+			loop = 1;
 			if (check > 0)
 			{
 				temp = ft_strsub(buf, 0, check);
 				ft_join(line, temp);
 				free(temp);
 			}
-			if (rd == 0)
-				return (0);
-			loop = 1;
 			if (list == NULL)
 			{
 				list = ft_lstnew((ft_strchr(buf, '\n') + 1), BUFF_SIZE + 1);
@@ -139,30 +138,29 @@ int	get_next_line(int fd, char **line)
 }
 int main()
 {
-	char *line;
-	line = ft_memalloc(1);
+	char *line = NULL;
 	int fd = open("test", O_RDONLY);
 	int fd1 = open("test1", O_RDONLY);
 	int fd2 = open("test2", O_RDONLY);
-	get_next_line(fd2, &line);
-	printf("%s\n", line);
-	free(line);
-	line = ft_memalloc(1);
 	get_next_line(fd, &line);
 	printf("%s\n", line);
 	free(line);
-	line = ft_memalloc(1);
-	get_next_line(fd2, &line);
+	line = NULL;
+	get_next_line(fd, &line);
 	printf("%s\n", line);
 	free(line);
-	line = ft_memalloc(1);
-	get_next_line(fd1, &line);
+	line = NULL;
+	get_next_line(fd, &line);
 	printf("%s\n", line);
 	free(line);
-	line = ft_memalloc(1);
-	get_next_line(fd2, &line);
+	line = NULL;
+	get_next_line(fd, &line);
 	printf("%s\n", line);
 	free(line);
-	
+	line = NULL;
+	get_next_line(fd, &line);
+	printf("%s\n", line);
+	free(line);
+
 	return (0);
 }
