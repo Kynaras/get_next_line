@@ -1,142 +1,190 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/06/18 08:27:28 by keverett          #+#    #+#             */
-/*   Updated: 2019/06/21 16:10:00 by keverett         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-#include "libft.h"
 #include "get_next_line.h"
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include "libft/libft.h"
 
-void ft_delist(t_list **alst)
+int	ft_checkline(char *buf)
 {
-	t_list *ptr;
-	t_list *temp;
-	ptr = *alst;
-	temp = *alst;
-	while (ptr != NULL)
-	{
-		ptr = ptr->next;
-		free(temp);
-		temp = ptr;
-	}
-}
-
-int	ft_count(t_list **alst)
-{
-	t_list *ptr;
 	int i;
-	int count;
-	char *cast;
 
 	i = 0;
-	count = 0;
-	ptr = *alst;
-	while (ptr != NULL)
-	{
-		cast = (*ptr).content;
-		while (cast[i] != '\0')
-		{
-			if (cast[i] == '\n')
-				return (count);
-			i++;
-			count++;
-		}
-		i = 0;
-		ptr = (*ptr).next;
-	}
-	return (count);
-}
-
-void	ft_lstcpy(t_list **alst, char **line)
-{
-	t_list *ptr;
-	int i;
-	int j;
-	char *cast;
-	i = 0;
-	j = 0;
-	ptr = *alst;
-
-	while (ptr != NULL)
-	{
-		cast = ptr->content;
-		while (cast[i] != '\0')
-		{
-			(*line)[j] = cast[i];
-			i++;
-			j++;
-		}
-		i = 0;
-		ptr = ptr->next;
-	}
-}
-void ft_recurse(int fd, char **line, t_list **alst)
-{
-	char *buf;
-	int i;
-	int count;
-
-	count = 0;
-	i = 0;
-	buf = ft_memalloc(BUFF_SIZE + 1);
-	read(fd, buf, BUFF_SIZE);
 	while (buf[i])
 	{
+		if (buf[0] == '\0')
+			return (0);
+		if (buf[0] == '\n')
+			return (-1);
 		if (buf[i] == '\n')
-			break;
-		else
-			i++;
-	}
-	if(i == BUFF_SIZE)
-		ft_recurse(fd, line, alst);
-	else
-	{
-// 		alst = malloc(sizeof(t_list*));
-		*alst = ft_lstnew(buf, BUFF_SIZE + 1);
-//		ebuf = ft_lstnew(ft_strsub(buf, i + 1, BUFF_SIZE - i - 1), BUFF_SIZE
-//				- i - 1);
-//		ft_putstr(ebuf->content);
+			return (i);
+		i++;
 	}
 	if (i == BUFF_SIZE)
-	{
-		ft_lstadd(alst, ft_lstnew(buf, BUFF_SIZE + 1));
-	}
+		return (-2);
+	else
+		return (-3);
 }
+
+int ft_ebuf(int fd, t_list *list, char **line)
+{
+	int size;
+	t_list *tmp;
+	char *buffer;
+
+	buffer = ft_memalloc(BUFF_SIZE + 1);
+	size = 0;
+	tmp = list;
+	while (tmp != NULL)
+	{
+		if (tmp->content_size == (unsigned)fd)
+		{
+			size = ft_checkline(tmp->content);
+			if (size == -1)
+			{
+				*line = ft_memalloc(1);
+				ft_strcpy(tmp->content, tmp->content + 1);
+				free(buffer);
+				return (-1);
+			}
+			else if (size == 0)
+			{
+				free(buffer);
+				return (0);
+			}
+			else if (size > 0)
+			{
+				ft_strncpy(buffer, tmp->content, size);
+				ft_join(line, buffer);
+				if (ft_strchr(tmp->content, '\n') == NULL)
+				{
+					free(buffer);
+					ft_bzero(tmp->content, BUFF_SIZE);
+					return (0);
+				}
+				ft_strcpy(tmp->content, ft_strchr(tmp->content, '\n') + 1);
+				free(buffer);
+				return (size);
+			}
+			else if (size == -3)
+			{
+				ft_join(line, tmp->content);
+				ft_bzero(tmp->content, BUFF_SIZE + 1);
+			}	
+		}
+		tmp = tmp->next;
+	}
+	free(buffer);
+	return (-4);
+}
+
 int	get_next_line(int fd, char **line)
 {
-	t_list **alst;
-	int count;
+	static t_list *list;
+	t_list *tmp;
+	char* buf;
+	int loop;
+	ssize_t rd;
+	int check;
+	char *temp;
 
-	alst = malloc(sizeof(t_list*));
-	//if (*line != NULL)
-	//	free(*line);
-	ft_recurse(fd, line, alst);
-//		ebuf = ft_lstnew(ft_strsub(buf, i + 1, BUFF_SIZE - i - 1), BUFF_SIZE
-//				- i - 1);
-//		ft_putstr(ebuf->content);
-	count = ft_count(alst);
-	*line = ft_memalloc(count + 1);
-	ft_lstcpy(alst, line);
-	ft_delist(alst);
-	return(1);
+	loop = 0;
+	buf = ft_memalloc(BUFF_SIZE + 1);
+	rd = ft_ebuf(fd, list, line);
+	if (rd > 0)
+	{
+		free(buf);
+		return (1);
+	}
+	while (loop == 0)
+	{
+		ft_bzero(buf, BUFF_SIZE);
+		rd = read(fd, buf, BUFF_SIZE);
+		if (rd == -1)
+		{
+			free(buf);
+			return (-1);
+		}
+		if (rd == 0)
+		{
+			free(buf);
+			return (0);
+		}
+		check = ft_checkline(buf);
+		if (check == -2)
+		{
+			ft_join(line, buf);
+		}
+		else
+		{
+			loop = 1;
+			if (check > 0)
+			{
+				temp = ft_strsub(buf, 0, check);
+				ft_join(line, temp);
+				free(temp);
+				if (list == NULL)
+				{
+					list = ft_lstnew((ft_strchr(buf, '\n') + 1), BUFF_SIZE + 1);
+					list->content_size = fd;
+				}
+				else
+				{
+					tmp = list;
+					while (tmp != NULL)
+					{
+						if ( tmp->content_size == (unsigned)fd)
+						{
+							ft_bzero(tmp->content, BUFF_SIZE);
+							ft_strcpy(tmp->content, ft_strchr(buf, '\n') + 1);
+							break;
+						}
+						else
+							tmp = tmp->next;
+					}
+				}
+				if (tmp == NULL)
+				{
+					ft_lstadd(&list, ft_lstnew((ft_strchr(buf, '\n') + 1), BUFF_SIZE + 1));
+					list->content_size = fd;
+				}
+			}
+		}
+	}
+	free(buf);
+	return (1);
 }
+
 int main()
 {
-	char **line;
-	line = (char**)malloc(sizeof(char*));
-	int id;
-	id = open("test", O_RDONLY);
-	get_next_line(id, line);
-	printf("%s", *line);
+	char *line = NULL;
+	int fd = open("test.txt", O_RDONLY);
+	int fd1 = open("test1", O_RDONLY);
+	int fd2 = open("test2", O_RDONLY);
+	int gnl = 1;
+		line = NULL;
+		gnl = get_next_line(fd, &line);
+		printf("%i", ft_strcmp(line, "1234567"));
+		printf("%s\n", line);
+		free(line);
+		line = NULL;
+		gnl = get_next_line(fd, &line);
+		printf("%i\n", ft_strcmp(line, "abcdefg"));
+		printf("%s\n", line);
+		free(line);
+	/*	printf("%s\n", line);
+		free(line);
+		line = NULL;
+		get_next_line(fd, &line);
+		printf("%s\n", line);
+		free(line);
+		line = NULL;
+		get_next_line(fd, &line);
+		printf("%s\n", line);
+		free(line);
+		line = NULL;
+		get_next_line(fd, &line);
+		printf("%s\n", line);
+		free(line);
+		line = NULL;
+		get_next_line(fd, &line);
+		printf("%s\n", line);
+		free(line); */
+	return (0);
 }
-
-
