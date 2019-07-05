@@ -1,7 +1,7 @@
 #include "get_next_line.h"
 #include "libft/libft.h"
 
-int	ft_checkline(char *buf)
+ssize_t	ft_checkline(char *buf)
 {
 	int i;
 
@@ -19,12 +19,12 @@ int	ft_checkline(char *buf)
 	if (i == BUFF_SIZE)
 		return (-2);
 	else
-		return (-3);
+		return (i);
 }
 
-int ft_ebuf(int fd, t_list *list, char **line)
+ssize_t ft_ebuf(int fd, t_list *list, char **line)
 {
-	int size;
+	ssize_t size;
 	t_list *tmp;
 	char *buffer;
 
@@ -39,7 +39,10 @@ int ft_ebuf(int fd, t_list *list, char **line)
 			if (size == -1)
 			{
 				*line = ft_memalloc(1);
-				ft_strcpy(tmp->content, tmp->content + 1);
+		//		if (ft_strchr(tmp->content, '\n') == NULL)
+		//			ft_bzero(tmp->content, BUFF_SIZE);
+		//		else
+					ft_strcpy(tmp->content, ft_strchr(tmp->content, '\n') + 1);
 				free(buffer);
 				return (-1);
 			}
@@ -52,14 +55,13 @@ int ft_ebuf(int fd, t_list *list, char **line)
 			{
 				ft_strncpy(buffer, tmp->content, size);
 				ft_join(line, buffer);
+				free(buffer);
 				if (ft_strchr(tmp->content, '\n') == NULL)
 				{
-					free(buffer);
 					ft_bzero(tmp->content, BUFF_SIZE);
-					return (0);
+					return (-2);
 				}
 				ft_strcpy(tmp->content, ft_strchr(tmp->content, '\n') + 1);
-				free(buffer);
 				return (size);
 			}
 			else if (size == -3)
@@ -81,13 +83,15 @@ int	get_next_line(int fd, char **line)
 	char* buf;
 	int loop;
 	ssize_t rd;
-	int check;
+	ssize_t check;
 	char *temp;
 
+	if (!line || fd < 0 || read(fd, NULL, 0) == -1)
+		return (-1);
 	loop = 0;
 	buf = ft_memalloc(BUFF_SIZE + 1);
-	rd = ft_ebuf(fd, list, line);
-	if (rd > 0)
+	check = ft_ebuf(fd, list, line);
+	if (check > 0 || check == -1)
 	{
 		free(buf);
 		return (1);
@@ -104,6 +108,8 @@ int	get_next_line(int fd, char **line)
 		if (rd == 0)
 		{
 			free(buf);
+			if (check == -2)
+				return (1);
 			return (0);
 		}
 		check = ft_checkline(buf);
@@ -119,9 +125,10 @@ int	get_next_line(int fd, char **line)
 				temp = ft_strsub(buf, 0, check);
 				ft_join(line, temp);
 				free(temp);
-				if (list == NULL)
+				if (list == NULL && (char*)ft_strchr(buf, '\n') != NULL)
 				{
-					list = ft_lstnew((ft_strchr(buf, '\n') + 1), BUFF_SIZE + 1);
+					list = ft_lstnew(buf, BUFF_SIZE + 1);
+					ft_strcpy(list->content, ft_strchr(list->content, '\n') + 1);
 					list->content_size = fd;
 				}
 				else
@@ -129,7 +136,7 @@ int	get_next_line(int fd, char **line)
 					tmp = list;
 					while (tmp != NULL)
 					{
-						if ( tmp->content_size == (unsigned)fd)
+						if (tmp->content_size == (unsigned)fd)
 						{
 							ft_bzero(tmp->content, BUFF_SIZE);
 							ft_strcpy(tmp->content, ft_strchr(buf, '\n') + 1);
@@ -139,9 +146,10 @@ int	get_next_line(int fd, char **line)
 							tmp = tmp->next;
 					}
 				}
-				if (tmp == NULL)
+				if (tmp == NULL && ft_strchr(buf, '\n') != NULL)
 				{
-					ft_lstadd(&list, ft_lstnew((ft_strchr(buf, '\n') + 1), BUFF_SIZE + 1));
+					ft_lstadd(&list, ft_lstnew(buf, BUFF_SIZE + 1));
+					ft_strcpy(list->content, ft_strchr(list->content, '\n') + 1);
 					list->content_size = fd;
 				}
 			}
@@ -149,42 +157,4 @@ int	get_next_line(int fd, char **line)
 	}
 	free(buf);
 	return (1);
-}
-
-int main()
-{
-	char *line = NULL;
-	int fd = open("test.txt", O_RDONLY);
-	int fd1 = open("test1", O_RDONLY);
-	int fd2 = open("test2", O_RDONLY);
-	int gnl = 1;
-		line = NULL;
-		gnl = get_next_line(fd, &line);
-		printf("%i", ft_strcmp(line, "1234567"));
-		printf("%s\n", line);
-		free(line);
-		line = NULL;
-		gnl = get_next_line(fd, &line);
-		printf("%i\n", ft_strcmp(line, "abcdefg"));
-		printf("%s\n", line);
-		free(line);
-	/*	printf("%s\n", line);
-		free(line);
-		line = NULL;
-		get_next_line(fd, &line);
-		printf("%s\n", line);
-		free(line);
-		line = NULL;
-		get_next_line(fd, &line);
-		printf("%s\n", line);
-		free(line);
-		line = NULL;
-		get_next_line(fd, &line);
-		printf("%s\n", line);
-		free(line);
-		line = NULL;
-		get_next_line(fd, &line);
-		printf("%s\n", line);
-		free(line); */
-	return (0);
 }
