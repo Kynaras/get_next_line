@@ -85,9 +85,9 @@ int	get_next_line(int fd, char **line)
 	ssize_t rd;
 	ssize_t check;
 	char *temp;
-
 	if (!line || fd < 0 || read(fd, NULL, 0) == -1)
 		return (-1);
+	*line = ft_memalloc(1);
 	loop = 0;
 	buf = ft_memalloc(BUFF_SIZE + 1);
 	check = ft_ebuf(fd, list, line);
@@ -120,11 +120,14 @@ int	get_next_line(int fd, char **line)
 		else
 		{
 			loop = 1;
-			if (check > 0)
+			if (check > 0 || check == -1)
 			{
+				if (check > 0)
+				{
 				temp = ft_strsub(buf, 0, check);
 				ft_join(line, temp);
 				free(temp);
+				}
 				if (list == NULL && (char*)ft_strchr(buf, '\n') != NULL)
 				{
 					list = ft_lstnew(buf, BUFF_SIZE + 1);
