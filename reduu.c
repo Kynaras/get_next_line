@@ -26,13 +26,11 @@ int	ft_checkline(char *buf)
 		return (-3);
 }
 
-int ft_ebuf(ssize_t fd, t_list *list, char **line)
+int ft_ebuf(ssize_t fd, t_list *list, char **line, char **buf)
 {
 	int size;
 	t_list *tmp;
-	char *buffer;
 
-	buffer = ft_memalloc(BUFF_SIZE + 1);
 	size = 0;
 	tmp = list;
 	while (tmp != NULL)
@@ -42,33 +40,23 @@ int ft_ebuf(ssize_t fd, t_list *list, char **line)
 			size = ft_checkline(tmp->content);
 			if (size == -1) // Might need to include check if there  is *only* a newline char in buf
 			{
-				*line = ft_memalloc(1);
 				ft_strcpy(tmp->content, tmp->content + 1);
-				free(buffer);
 				return (-1);
 			}
 			else if (size == 0)
-			{
-				free(buffer);
 				return (0);
-			}
 			else if (size > 0)
 			{
-				ft_strncpy(buffer, tmp->content, size);
-				ft_join(line, buffer);
+				ft_strncpy(*buf, tmp->content, size);
+				ft_join(line, *buf);
 				ft_strcpy(tmp->content, ft_strchr(tmp->content, '\n') + 1);
-				free(buffer);
 				return (size);
 			}
 			else if (size == -3)
-			{
 				ft_join(line, tmp->content);
-				ft_bzero(tmp->content, BUFF_SIZE + 1);
-			}	
 		}
 		tmp = tmp->next;
 	}
-	free(buffer);
 	return (-4);
 }
 
@@ -76,16 +64,17 @@ int	get_next_line(int fd, char **line)
 {
 	static t_list *list;
 	t_list *tmp;
-	char* buf;
+	char *buf;
 	int loop;
 	ssize_t rd;
 	int check;
 	char *temp;
 
+	*line = ft_memalloc(1);
 	loop = 0;
 	buf = ft_memalloc(BUFF_SIZE + 1);
-	rd = ft_ebuf(fd, list, line);
-	if (rd > 0)
+	rd = ft_ebuf(fd, list, line, &buf);
+	if (rd > 0 || size == -1)
 	{
 		free(buf);
 		return (1);
@@ -94,35 +83,17 @@ int	get_next_line(int fd, char **line)
 	{
 		ft_bzero(buf, BUFF_SIZE);
 		rd = read(fd, buf, BUFF_SIZE);
-		if (rd == -1)
-		{
-			free(buf);
-			return (-1);
-		}
-		else if (rd == 0)
+		if (rd == 0)
 		{
 			free(buf);
 			return (0);
 		}
-		if (rd == 0 && buf[0] == '\0')
-		{
-			free(buf);
-			return (0);
-		}
-		//		if (rd == 0)
-		//		{
-		//			list = ft_lstnew(buf, BUFF_SIZE + 1);
-		//			list->content_size = -5;
-		//		}
 		check = ft_checkline(buf);
 		if (check == -2 || check == 0)
-		{
 			ft_join(line, buf);
-		}
 		else
 		{
 			loop = 1;
-
 			if (check > 0)
 			{
 				temp = ft_strsub(buf, 0, check);
@@ -137,8 +108,6 @@ int	get_next_line(int fd, char **line)
 			else
 			{
 				tmp = list;
-
-				while (tmp != NULL)
 				{
 
 					if (tmp->content_size == fd)
