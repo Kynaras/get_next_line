@@ -24,15 +24,12 @@ ssize_t	ft_checkline(char *buf)
 		return (i);
 }
 
-ssize_t ft_ebuf(int fd, t_list *list, char **line)
+ssize_t ft_ebuf(int fd, t_list *list, char **line, char *buf)
 {
 	ssize_t size;
 	t_list *tmp;
 	char *buffer;
-	int t;
 
-	t = 0;
-	buffer = ft_memalloc(BUFF_SIZE + 1);
 	size = 0;
 	tmp = list;
 	while (tmp != NULL)
@@ -47,19 +44,14 @@ ssize_t ft_ebuf(int fd, t_list *list, char **line)
 					ft_strcpy(tmp->content, tmp->content + 1);
 				else
 					ft_bzero(tmp->content, BUFF_SIZE);
-				free(buffer);
 				return (-1);
 			} 
 			if (size == -1)
-			{
-				free(buffer);
 				return (0);
-			}
 			else if (size > 0)
 			{
-				ft_strncpy(buffer, tmp->content, size);
-				ft_join(line, buffer);
-				free(buffer);
+				ft_strncpy(buf, tmp->content, size);
+				ft_join(line, buf);
 				if (ft_strchr(tmp->content, '\n') == NULL)
 				{
 					ft_bzero(tmp->content, BUFF_SIZE);
@@ -76,7 +68,6 @@ ssize_t ft_ebuf(int fd, t_list *list, char **line)
 		}
 		tmp = tmp->next;
 	}
-	free(buffer);
 	return (-4);
 }
 
@@ -91,12 +82,11 @@ int	get_next_line(int fd, char **line)
 	char *temp;
 
 	loop = 0;
-
 	if (!line || fd < 0 || read(fd, NULL, 0) == -1)
 		return (-1);
 	*line = ft_memalloc(1);
 	buf = ft_memalloc(BUFF_SIZE + 1);
-	check = ft_ebuf(fd, list, line);
+	check = ft_ebuf(fd, list, line, buf);
 	if (check > 0 || check == -1)
 	{
 		free(buf);
@@ -172,22 +162,22 @@ int	get_next_line(int fd, char **line)
 int main()
 {
 	int gnl;
-//	clock_t start, end;
+	//	clock_t start, end;
 	char *line;
 	ssize_t fd;
-//	double time;
+	//	double time;
 
 	gnl = 0;
-//	start = clock();
+	//	start = clock();
 	fd = open("text.txt", O_RDONLY);
 	while (get_next_line(fd, &line) > 0) 
-	 {
+	{
 		printf("%s\n", line);
 		free(line);
 	}
-//	end = clock();
-//	time = ((double)(end - start)) / CLOCKS_PER_SEC;
-//	printf("Time == %f", time);
+	//	end = clock();
+	//	time = ((double)(end - start)) / CLOCKS_PER_SEC;
+	//	printf("Time == %f", time);
 }
 
 
