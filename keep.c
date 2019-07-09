@@ -1,6 +1,8 @@
 #include "get_next_line.h"
 #include "libft/libft.h"
 
+
+
 ssize_t	ft_checkline(char *buf)
 {
 	int i;
