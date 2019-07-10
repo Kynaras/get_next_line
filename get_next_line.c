@@ -6,7 +6,7 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/07/10 10:07:26 by keverett          #+#    #+#             */
-/*   Updated: 2019/07/10 15:32:01 by keverett         ###   ########.fr       */
+/*   Updated: 2019/07/10 16:02:18 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	ft_lstad(t_list **list, char *buf, int fd)
 		{
 			ft_bzero(tmp->content, BUFF_SIZE);
 			ft_strcpy(tmp->content, ft_strchr(buf, '\n') + 1);
-			break;
+			break ;
 		}
 		else
 			tmp = tmp->next;
@@ -39,10 +39,10 @@ void	ft_lstad(t_list **list, char *buf, int fd)
 	}
 }
 
-void	ft_lstmake(t_list **list, char **line, char *buf, int fd)
+int		ft_lstmake(t_list **list, char **line, char *buf, int fd)
 {
-	int check;
-	char *temp;
+	int		check;
+	char	*temp;
 
 	check = ft_chrlen(buf, '\n');
 	if (check >= 0)
@@ -61,14 +61,15 @@ void	ft_lstmake(t_list **list, char **line, char *buf, int fd)
 			(**list).content_size = fd;
 		}
 		else
-			ft_lstad(list, buf,fd);
+			ft_lstad(list, buf, fd);
 	}
+	return (1);
 }
 
 ssize_t	ft_ebuf(int fd, t_list *list, char **line, char *buf)
 {
-	ssize_t size;
-	t_list *tmp;
+	ssize_t		size;
+	t_list		*tmp;
 
 	tmp = list;
 	while (tmp != NULL)
@@ -96,9 +97,9 @@ ssize_t	ft_ebuf(int fd, t_list *list, char **line, char *buf)
 
 int		ft_loop(t_list **list, char **line, int check, int fd)
 {
-	int loop;
-	ssize_t rd;
-	char *buf;
+	int		loop;
+	ssize_t	rd;
+	char	*buf;
 
 	buf = ft_memalloc(BUFF_SIZE + 1);
 	loop = 0;
@@ -114,11 +115,8 @@ int		ft_loop(t_list **list, char **line, int check, int fd)
 		}
 		if ((check = ft_chrlen(buf, '\n')) == BUFF_SIZE)
 			ft_join(line, buf);
-		else
-		{
+		else if (ft_lstmake(list, line, buf, fd))
 			loop = 1;
-			ft_lstmake(list, line, buf, fd);
-		}
 	}
 	free(buf);
 	return (1);
@@ -126,9 +124,9 @@ int		ft_loop(t_list **list, char **line, int check, int fd)
 
 int		get_next_line(int fd, char **line)
 {
-	static t_list *list;
-	char* buf;
-	ssize_t check;
+	static t_list	*list;
+	char			*buf;
+	ssize_t			check;
 
 	if (!line || fd < 0 || read(fd, NULL, 0) == -1)
 		return (-1);
@@ -140,6 +138,6 @@ int		get_next_line(int fd, char **line)
 		free(buf);
 		return (1);
 	}
-	free(buf);	
+	free(buf);
 	return (ft_loop(&list, line, check, fd));
 }
