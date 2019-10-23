@@ -6,19 +6,15 @@
 /*   By: keverett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/10 10:34:55 by keverett          #+#    #+#             */
-/*   Updated: 2019/07/06 07:18:49 by keverett         ###   ########.fr       */
+/*   Updated: 2019/07/11 09:25:31 by keverett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+
+#ifndef GET_NEXT_LINE_H
+# define GET_NEXT_LINE_H
 
 int				get_next_line(int fd, char **line);
 
-#ifndef BUFF_SIZE
-# define BUFF_SIZE 4
+# define BUFF_SIZE 100
 
 #endif
-
-
